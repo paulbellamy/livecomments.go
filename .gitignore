@@ -1,3 +1,6 @@
 *.sw?
 logs/*
 log/*
+*.6
+*.8
+server
