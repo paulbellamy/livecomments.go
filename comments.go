@@ -1,8 +1,8 @@
 package main
 
 import (
- // "github.com/hoisie/redis.go";
- // "strings";
+  "github.com/hoisie/redis.go";
+  "fmt";
   "json";
 )
 
@@ -21,6 +21,12 @@ func NewComment(j []byte) (c Comment) {
     panic(err);
   }
   return c;
+}
+
+func FindComment(id int) (c Comment) {
+  var client redis.Client;
+  js, _ := client.Get( fmt.Sprintf("comment:id:%i", id) );
+  return NewComment(js);
 }
 
 func (c *Comment) Save() bool {

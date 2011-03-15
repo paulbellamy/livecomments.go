@@ -4,3 +4,4 @@ log/*
 *.6
 *.8
 server
+_obj/*
