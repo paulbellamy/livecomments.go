@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/hoisie/web.go"
+  //"./models/comments"
 )
 
 func main() {
