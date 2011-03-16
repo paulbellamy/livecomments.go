@@ -2,10 +2,12 @@ package main
 
 import (
   "github.com/hoisie/redis.go";
+  "time";
   "fmt";
   "json";
   "strconv";
   "bytes";
+  "os";
 )
 
 type Comment struct {
@@ -16,16 +18,13 @@ type Comment struct {
   PageUrl   string;
 }
 
-func New(j []byte) (c Comment) {
-  err := json.Unmarshal(j, &c);
+func New(j []byte) (c Comment, err os.Error) {
+  err = json.Unmarshal(j, &c);
 
-  if (err != nil) {
-    panic(err);
-  }
-  return c;
+  return c, err;
 }
 
-func Find(id int64) (c Comment) {
+func Find(id int64) (c Comment, err os.Error) {
   var client redis.Client;
   c.Id = id;
   js, _ := client.Get( fmt.Sprintf("comment:id:%i", id) );
@@ -37,7 +36,10 @@ func PaginateFor(url string, start int, count int) (c []Comment) {
   commentIds, _ := client.Lrange(fmt.Sprintf("comment:page_url:%s", url), start, count);
   for _, idString := range commentIds {
     id, _ := strconv.Atoi64(string(idString));
-    c = append(c, Find(id));
+    comment, err := Find(id);
+    if (err == nil) {
+      c = append(c, comment);
+    }
   }
   return c;
 }
@@ -53,6 +55,8 @@ func (c *Comment) Save() bool {
     id, err := client.Incr("global:nextCommentId");
     if (err != nil) { return false; }
     c.Id = id;
+
+    c.CreatedAt = time.Seconds();
   }
 
   // Store it by the primary key
