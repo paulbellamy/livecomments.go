@@ -3,7 +3,7 @@
 # license that can be found in the LICENSE file.
 include $(GOROOT)/src/Make.inc
 
-TARG=main
+TARG=server
 GOFILES=\
 	server.go\
 	comments.go
