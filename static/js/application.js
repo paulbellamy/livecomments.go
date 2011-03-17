@@ -11,6 +11,8 @@ comments.bind('add', function(comment) {
   comments.fetch({success: function(){view.render();}});
 });
 
+var commentTemplate = '<div id="comment"><div id="commentAuthor">{{author}}</div><div id="commentBody">{{body}}</div></div>';
+
 var CommentView = Backbone.View.extend({
     events: { "submit #commentForm" : "handleNewComment" }
 
@@ -21,10 +23,9 @@ var CommentView = Backbone.View.extend({
     }
 
   , render: function() {
-      var data = comments.map(function(comment) { return comment.get('Body') + '\n'});
-      var result = data.reduce(function(memo,str) { return memo + str }, '');
-      $("#commentHistory").text(result);
-      //this.handleEvents();
+      var data = comments.map(function(comment) { return {body: comment.get('Body')}; });
+      var result = data.reduce(function(memo,commentData) { return memo + Mustache.to_html(commentTemplate, commentData); }, '');
+      $("#commentHistory").html(result);
       return this;
     }
 });
@@ -33,4 +34,4 @@ var view = new CommentView({el: $('#commentArea')});
 
 setInterval(function(){
   comments.fetch({success: function(){view.render();}});
-},1000);
+},10000);

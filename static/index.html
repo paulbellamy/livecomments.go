@@ -5,15 +5,16 @@
     <link rel="stylesheet" type="text/css" href="css/default.css" media="screen" />
     <script src="js/vendor/underscore.js"></script>
     <script src="js/vendor/jquery.js"></script>
+    <script src="js/vendor/mustache.js"></script>
     <script src="js/vendor/backbone.js"></script>
   </head>
   <body>
     <div id="commentArea">
-      <textarea id='commentHistory'></textarea>
       <form method="post" action="#" id= 'commentForm' name="newComment" onsubmit="return false">
         <input name= 'newCommentBody' type="text" />
         <input type="submit" value='send'/>
       </form>
+      <div id='commentHistory'></div>
     </div>
     
     <script src="js/application.js"></script>
