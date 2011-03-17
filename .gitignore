@@ -4,4 +4,5 @@ log/*
 *.6
 *.8
 server
+livecomments
 _obj/*

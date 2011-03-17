@@ -3,9 +3,9 @@
 # license that can be found in the LICENSE file.
 include $(GOROOT)/src/Make.inc
 
-TARG=server
+TARG=livecomments
 GOFILES=\
 	server.go\
 	comments.go
 
-include $(GOROOT)/src/Make.pkg
+include $(GOROOT)/src/Make.cmd
