@@ -6,19 +6,31 @@ import (
   "strconv";
   "json";
   "bytes";
+  "os";
+  //"io/ioutil";
 )
 
 func list(ctx *web.Context, val string) { 
   url := string(ctx.Params["url"]);
-  start, _ := strconv.Atoi(ctx.Params["start"]);
-  count, _ := strconv.Atoi(ctx.Params["count"]);
+
+  start, err := strconv.Atoi(ctx.Params["start"]);
+  if (err != nil) { start = 0; } // start defaults to 0
+
+  count, err := strconv.Atoi(ctx.Params["count"]);
+  if (err != nil) { count = 10; } // Count defaults to 10
+
   comments := PaginateFor(url, start, count);
   j, _ := json.Marshal(comments);
   ctx.WriteString(string(j));
 }
 
 func create(ctx *web.Context, val string) { 
-  comment, err := New(bytes.NewBufferString(ctx.Params["body"]).Bytes());
+  var comment Comment;
+  var err os.Error;
+  for k, _ := range ctx.Request.Params {
+    comment, err = New(bytes.NewBufferString(k).Bytes());
+  }
+
 
   if (err != nil) {
     ctx.Abort(400, fmt.Sprintf("Error Parsing Comment: %", err));
