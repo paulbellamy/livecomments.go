@@ -10,7 +10,12 @@ import (
   //"io/ioutil";
 )
 
+func allowCrossOriginResourceSharing(ctx *web.Context) {
+  ctx.SetHeader("Access-Control-Allow-Origin", "*", true);
+}
+
 func list(ctx *web.Context, val string) { 
+  allowCrossOriginResourceSharing(ctx);
   url := string(ctx.Params["url"]);
 
   start, err := strconv.Atoi(ctx.Params["start"]);
@@ -25,6 +30,7 @@ func list(ctx *web.Context, val string) {
 }
 
 func create(ctx *web.Context, val string) { 
+  allowCrossOriginResourceSharing(ctx);
   var comment Comment;
   var err os.Error;
   for k, _ := range ctx.Request.Params {
