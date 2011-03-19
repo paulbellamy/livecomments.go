@@ -1,7 +1,8 @@
 package main
 
 import (
-	"github.com/hoisie/web.go";
+	//"github.com/hoisie/web.go";
+  "web";
   "fmt"
   "strconv";
   "json";
@@ -19,13 +20,20 @@ func allowCrossOriginResourceSharing(ctx *web.Context) {
 
 func list(ctx *web.Context, val string) { 
   allowCrossOriginResourceSharing(ctx);
-  url := string(ctx.Params["url"]);
+  ctx.ContentType("json") 
 
-  if start, err := strconv.Atoi(ctx.Params["start"]); err != nil {
+  var url string;
+  var start int;
+  var count int;
+  var err os.Error;
+
+  url = string(ctx.Params["url"]);
+
+  if start, err = strconv.Atoi(ctx.Params["start"]); err != nil {
     start = 0; // start defaults to 0
   }
 
-  if count, err := strconv.Atoi(ctx.Params["count"]) err != nil {
+  if count, err = strconv.Atoi(ctx.Params["count"]); err != nil {
     count = 10; // Count defaults to 10
    }
 
@@ -36,13 +44,12 @@ func list(ctx *web.Context, val string) {
 
 func create(ctx *web.Context, val string) { 
   allowCrossOriginResourceSharing(ctx);
+  ctx.ContentType("json") 
+
   var comment Comment;
   var err os.Error;
 
-  k, _ := json.Marshal(ctx.ParamData);
-  fmt.Printf("ParamData: %s\n", string(k));
-
-  if comment, err = New(k); err != nil {
+  if err = ctx.UnmarshalParams(&comment); err != nil {
     ctx.Abort(400, fmt.Sprintf("Error Parsing Comment: %", err));
     return;
   }
@@ -66,7 +73,11 @@ func socketIODisconnectHandler(c *socketio.Conn) {
 }
 
 func socketIOMessageHandler(c *socketio.Conn, msg socketio.Message) {
-  if comment, err := New(bytes.NewBufferString(msg.Data()).Bytes()); err != nil {
+  var comment Comment;
+  var j []uint8;
+  var err os.Error;
+
+  if comment, err = New(bytes.NewBufferString(msg.Data()).Bytes()); err != nil {
     log.Println(fmt.Sprintf("Error Parsing Comment %s", err));
     c.Send(fmt.Sprintf("Error Parsing Comment %s", err));
     return;
@@ -78,7 +89,7 @@ func socketIOMessageHandler(c *socketio.Conn, msg socketio.Message) {
     return;
   }
 
-  if j, err := json.Marshal(comment); err != nil {
+  if j, err = json.Marshal(comment); err != nil {
     log.Println(fmt.Sprintf("Error Saving Comment %s", err));
     c.Send(fmt.Sprintf("Error Saving Comment %s", err));
     return;
