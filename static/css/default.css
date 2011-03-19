@@ -17,15 +17,15 @@ body {
 
 .comment .commentAuthor {
   float: left;
-  min-width: 75px;
+  width: 75px;
   margin-right: 25px;
 }
 
 .comment .commentTimestamp {
   color: #9e9e9e;
   float: left;
-  min-width: 50px;
-  padding-right: 25px;
+  width: 75px;
+  margin-right: 25px;
   font-size: 60%;
   padding-top: 0;
   clear: left;
