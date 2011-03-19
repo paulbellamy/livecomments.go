@@ -8,6 +8,9 @@ import (
   "bytes";
   "os";
   "io/ioutil";
+  "github.com/madari/go-socket.io";
+  "http";
+  "log";
 )
 
 func allowCrossOriginResourceSharing(ctx *web.Context) {
@@ -63,9 +66,46 @@ func create(ctx *web.Context, val string) {
   ctx.WriteString(string(j));
 }
 
+var sio socketio.SocketIO;
+func socketIOConnectHandler(c *socketio.Conn) {
+    sio.Broadcast(struct{ announcement string }{"connected: " + c.String()});
+}
+
+func socketIODisconnectHandler(c *socketio.Conn) {
+    sio.BroadcastExcept(
+      c,
+      struct{ announcement string }{"disconnected: " + c.String()});
+}
+
+func socketIOMessageHandler(c *socketio.Conn, msg socketio.Message) {
+    sio.BroadcastExcept(c,
+      struct{ message []string }{[]string{c.String(), msg.Data()}});
+}
+
 func main() {
   client.Addr = "127.0.0.1:6379";
   web.Get("/comments(.*)", list);
   web.Post("/comments(.*)", create);
 	web.Run("0.0.0.0:3000");
+
+  // create the socket.io server and mux it to /socket.io/
+  config := socketio.DefaultConfig
+  config.Origins = []string{"localhost:8080"}
+  sio := socketio.NewSocketIO(&config)
+  
+  go func() {
+    if err := sio.ListenAndServeFlashPolicy(":843"); err != nil {
+      log.Println(err)
+    }
+  }()
+
+  sio.OnConnect(socketIOConnectHandler);
+  sio.OnDisconnect(socketIODisconnectHandler);
+  sio.OnMessage(socketIOMessageHandler);
+
+  mux := sio.ServeMux();
+  mux.Handle("/", http.FileServer("www/", "/"))
+  if err := http.ListenAndServe(":8080", mux); err != nil {
+    log.Fatal("ListenAndServe: ", err);
+  }
 }
