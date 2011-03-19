@@ -8,10 +8,14 @@ var comments = new CommentStore;
 
 
 comments.bind('add', function(comment) {
-  comments.fetch({success: function(){view.render();}});
+  comments.fetch({success: function(){
+    view.render();
+    $('.comment#' + comment.get('Id')).slideUp(0);
+    $('.comment#' + comment.get('Id')).slideDown();
+  }});
 });
 
-var commentTemplate = '<div class="comment" id="{{id}}"><div id="commentAuthor">{{author}}</div><div id="commentBody">{{body}}</div></div>';
+var commentTemplate = '<div class="comment" id="{{id}}"><div class="commentAuthor">{{author}}:</div><div class="commentBody">{{body}}</div></div>';
 
 var CommentView = Backbone.View.extend({
     events: { "submit #commentForm" : "handleNewComment" }
