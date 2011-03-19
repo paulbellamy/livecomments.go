@@ -1,3 +1,27 @@
+var humanizeTimestamp = function(timestamp) {
+  var now = new Date();
+  var then = new Date(timestamp);
+
+  if (now.getFullYear() != then.getFullYear()) {
+    return then.toLocaleDateString();
+  } else if (now.getMonth() != then.getMonth()) {
+    return then.toLocaleDateString();
+  } else if (now.getDate() != then.getDate()) {
+    return then.toLocaleDateString();
+  } else if (now.getHours() != then.getHours()) {
+    return then.toLocaleTimeString();
+  } else if (now.getMinutes() != then.getMinutes()) {
+    var diff = now.getMinutes() - then.getMinutes();
+    if (diff == 1) {
+      return "a minute ago";
+    } else {
+      return diff + " minutes ago";
+    }
+  } else {
+    return "less than a minute ago";
+  }
+};
+
 var Comment = Backbone.Model.extend({});
 
 var CommentStore = Backbone.Collection.extend({
@@ -15,7 +39,7 @@ comments.bind('add', function(comment) {
   }});
 });
 
-var commentTemplate = '<div class="comment" id="{{id}}"><div class="commentAuthor">{{author}}:</div><div class="commentBody">{{body}}</div></div>';
+var commentTemplate = '<div class="comment" id="{{id}}"><div class="commentAuthor">{{author}}:</div><div class="commentTimestamp">{{timestamp}}</div><div class="commentBody">{{body}}</div></div>';
 
 var CommentView = Backbone.View.extend({
     events: { "submit #commentForm" : "handleNewComment" }
@@ -32,6 +56,7 @@ var CommentView = Backbone.View.extend({
       var data = comments.map(function(comment) { return { id: comment.get('Id')
                                                          , author: comment.get('Author')
                                                          , body: comment.get('Body')
+                                                         , timestamp: humanizeTimestamp(comment.get('CreatedAt')*1000)
                                                          };
                                                 });
       var result = data.reduce(function(memo,commentData) { return memo + Mustache.to_html(commentTemplate, commentData); }, '');

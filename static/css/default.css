@@ -9,17 +9,31 @@ body {
 }
 
 .comment {
-  border-top: 1px solid #9e9e9e;
+  margin: 0.75em;
+  padding: 0.75em;
   clear: both;
+  background-color: #eee;
 }
 
 .comment .commentAuthor {
   float: left;
+  min-width: 75px;
+  margin-right: 25px;
+}
+
+.comment .commentTimestamp {
+  color: #9e9e9e;
+  float: left;
   min-width: 50px;
-  margin-right: 1em;
+  padding-right: 25px;
+  font-size: 60%;
+  padding-top: 0;
+  clear: left;
 }
 
 .comment .commentBody {
-  float: left;
   min-height: 50px;
+  margin-left: 90px;
+  padding-left: 10px;
+  border-left: 1px solid #9e9e9e;
 }
