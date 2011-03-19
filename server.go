@@ -41,8 +41,8 @@ func create(ctx *web.Context, val string) {
   fmt.Printf("Context: %s\n", string(k));
 
   b := bytes.NewBufferString("");
-  for k, v := range ctx.Request.Params {
-    b.WriteString(fmt.Sprintf("%s=%s&", k, v));
+  for k, _ := range ctx.Request.Params {
+    b.WriteString(fmt.Sprintf("%s", k));
   }
   ctx.Request.Body = b;
 
@@ -68,15 +68,38 @@ func create(ctx *web.Context, val string) {
 
 var sio socketio.SocketIO;
 func socketIOConnectHandler(c *socketio.Conn) {
-  sio.Broadcast(struct{ announcement string }{"connected: " + c.String()});
+  //sio.Broadcast(struct{ announcement string }{"connected: " + c.String()});
 }
 
 func socketIODisconnectHandler(c *socketio.Conn) {
-  sio.BroadcastExcept(c, struct{ announcement string }{"disconnected: " + c.String()});
+  //sio.BroadcastExcept(c, struct{ announcement string }{"disconnected: " + c.String()});
 }
 
 func socketIOMessageHandler(c *socketio.Conn, msg socketio.Message) {
-  sio.BroadcastExcept(c, struct{ message []string }{[]string{c.String(), msg.Data()}});
+  comment, err := New(bytes.NewBufferString(msg.Data()).Bytes());
+
+  if (err != nil) {
+    log.Println(fmt.Sprintf("Error Parsing Comment %s", err));
+    c.Send(fmt.Sprintf("Error Parsing Comment %s", err));
+    return;
+  }
+
+  err = comment.Save();
+  if (err != nil) {
+    log.Println(fmt.Sprintf("Error Saving Comment %s", err));
+    c.Send(fmt.Sprintf("Error Saving Comment %s", err));
+    return;
+  }
+
+  j, err := json.Marshal(comment);
+
+  if (err != nil) {
+    log.Println(fmt.Sprintf("Error Saving Comment %s", err));
+    c.Send(fmt.Sprintf("Error Saving Comment %s", err));
+    return;
+  }
+
+  sio.Broadcast(struct{ announcement string }{string(j)});
 }
 
 func main() {
