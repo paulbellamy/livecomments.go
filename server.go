@@ -68,18 +68,15 @@ func create(ctx *web.Context, val string) {
 
 var sio socketio.SocketIO;
 func socketIOConnectHandler(c *socketio.Conn) {
-    sio.Broadcast(struct{ announcement string }{"connected: " + c.String()});
+  sio.Broadcast(struct{ announcement string }{"connected: " + c.String()});
 }
 
 func socketIODisconnectHandler(c *socketio.Conn) {
-    sio.BroadcastExcept(
-      c,
-      struct{ announcement string }{"disconnected: " + c.String()});
+  sio.BroadcastExcept(c, struct{ announcement string }{"disconnected: " + c.String()});
 }
 
 func socketIOMessageHandler(c *socketio.Conn, msg socketio.Message) {
-    sio.BroadcastExcept(c,
-      struct{ message []string }{[]string{c.String(), msg.Data()}});
+  sio.BroadcastExcept(c, struct{ message []string }{[]string{c.String(), msg.Data()}});
 }
 
 func main() {
