@@ -18,7 +18,7 @@ var humanizeTimestamp = function(timestamp) {
       return diff + " minutes ago";
     }
   } else {
-    return "less than a minute ago";
+    return "just now";
   }
 };
 
