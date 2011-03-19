@@ -7,7 +7,7 @@ import (
   "json";
   "bytes";
   "os";
-  //"io/ioutil";
+  "io/ioutil";
 )
 
 func allowCrossOriginResourceSharing(ctx *web.Context) {
@@ -33,10 +33,20 @@ func create(ctx *web.Context, val string) {
   allowCrossOriginResourceSharing(ctx);
   var comment Comment;
   var err os.Error;
-  for k, _ := range ctx.Request.Params {
-    comment, err = New(bytes.NewBufferString(k).Bytes());
-  }
 
+  k, _ := json.Marshal(ctx);
+  fmt.Printf("Context: %s\n", string(k));
+
+  b := bytes.NewBufferString("");
+  for k, v := range ctx.Request.Params {
+    b.WriteString(fmt.Sprintf("%s=%s&", k, v));
+  }
+  ctx.Request.Body = b;
+
+  k, _ = ioutil.ReadAll(ctx.Request.Body);
+  fmt.Printf("Request Body: %s\n", string(k));
+
+  comment, err = New(k);
 
   if (err != nil) {
     ctx.Abort(400, fmt.Sprintf("Error Parsing Comment: %", err));
