@@ -7,7 +7,7 @@ import (
   "json";
   "bytes";
   "os";
-  "io/ioutil";
+  //"io/ioutil";
   "github.com/madari/go-socket.io";
   "http";
   "log";
@@ -21,11 +21,13 @@ func list(ctx *web.Context, val string) {
   allowCrossOriginResourceSharing(ctx);
   url := string(ctx.Params["url"]);
 
-  start, err := strconv.Atoi(ctx.Params["start"]);
-  if (err != nil) { start = 0; } // start defaults to 0
+  if start, err := strconv.Atoi(ctx.Params["start"]); err != nil {
+    start = 0; // start defaults to 0
+  }
 
-  count, err := strconv.Atoi(ctx.Params["count"]);
-  if (err != nil) { count = 10; } // Count defaults to 10
+  if count, err := strconv.Atoi(ctx.Params["count"]) err != nil {
+    count = 10; // Count defaults to 10
+   }
 
   comments := PaginateFor(url, start, count);
   j, _ := json.Marshal(comments);
@@ -37,27 +39,15 @@ func create(ctx *web.Context, val string) {
   var comment Comment;
   var err os.Error;
 
-  k, _ := json.Marshal(ctx);
-  fmt.Printf("Context: %s\n", string(k));
+  k, _ := json.Marshal(ctx.ParamData);
+  fmt.Printf("ParamData: %s\n", string(k));
 
-  b := bytes.NewBufferString("");
-  for k, _ := range ctx.Request.Params {
-    b.WriteString(fmt.Sprintf("%s", k));
-  }
-  ctx.Request.Body = b;
-
-  k, _ = ioutil.ReadAll(ctx.Request.Body);
-  fmt.Printf("Request Body: %s\n", string(k));
-
-  comment, err = New(k);
-
-  if (err != nil) {
+  if comment, err = New(k); err != nil {
     ctx.Abort(400, fmt.Sprintf("Error Parsing Comment: %", err));
     return;
   }
 
-  err = comment.Save();
-  if (err != nil) {
+  if err = comment.Save(); err != nil {
     ctx.Abort(500, fmt.Sprintf("Error Saving Comment: %", err));
     return;
   }
@@ -76,24 +66,19 @@ func socketIODisconnectHandler(c *socketio.Conn) {
 }
 
 func socketIOMessageHandler(c *socketio.Conn, msg socketio.Message) {
-  comment, err := New(bytes.NewBufferString(msg.Data()).Bytes());
-
-  if (err != nil) {
+  if comment, err := New(bytes.NewBufferString(msg.Data()).Bytes()); err != nil {
     log.Println(fmt.Sprintf("Error Parsing Comment %s", err));
     c.Send(fmt.Sprintf("Error Parsing Comment %s", err));
     return;
   }
 
-  err = comment.Save();
-  if (err != nil) {
+  if err = comment.Save(); err != nil {
     log.Println(fmt.Sprintf("Error Saving Comment %s", err));
     c.Send(fmt.Sprintf("Error Saving Comment %s", err));
     return;
   }
 
-  j, err := json.Marshal(comment);
-
-  if (err != nil) {
+  if j, err := json.Marshal(comment); err != nil {
     log.Println(fmt.Sprintf("Error Saving Comment %s", err));
     c.Send(fmt.Sprintf("Error Saving Comment %s", err));
     return;
