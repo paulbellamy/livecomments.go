@@ -34,6 +34,7 @@ var comments = new CommentStore;
 comments.bind('add', function(comment) {
   comments.fetch({success: function(){
     view.render();
+    // Animate the new comment
     $('.comment#' + comment.get('Id')).slideUp(0);
     $('.comment#' + comment.get('Id')).slideDown();
   }});
@@ -42,7 +43,17 @@ comments.bind('add', function(comment) {
 var commentTemplate = '<div class="comment" id="{{id}}"><div class="commentAuthor">{{author}}:</div><div class="commentTimestamp">{{timestamp}}</div><div class="commentBody">{{body}}</div></div>';
 
 var CommentView = Backbone.View.extend({
-    events: { "submit #commentForm" : "handleNewComment" }
+    initialize: function(options) {
+      this.model.comments.bind('add', this.addComment);
+      this.socket = options.socket;
+    }
+
+  , events: { "submit #commentForm" : "handleNewComment" }
+
+  , addComment: function(comment) {
+    var view = new CommentView({model: comment});
+    $('#commentHistory').prepend(view.render().el);
+  }
 
   , handleNewComment: function(data) {
       var author = $('input[name=newCommentAuthor]');
