@@ -1,16 +1,14 @@
 package main
 
 import (
-  "github.com/hoisie/redis.go";
   "time";
   "fmt";
   "json";
   "strconv";
   "bytes";
   "os";
+  "log";
 )
-
-var client redis.Client;
 
 type Comment struct {
   Id        int64;
@@ -24,6 +22,21 @@ func New(j []byte) (c Comment, err os.Error) {
   err = json.Unmarshal(j, &c);
 
   return c, err;
+}
+
+func Create(j []byte) (c Comment, err os.Error) {
+  c, err = New(j);
+  if err != nil {
+    log.Println(fmt.Sprintf("Error Parsing Comment: %s", err));
+    return c, err;
+  }
+
+  if err = c.Save(); err != nil {
+    log.Println(fmt.Sprintf("Error Saving Comment: %s", err));
+    return c, err;
+  }
+
+  return c, nil;
 }
 
 func Find(id int64) (c Comment, err os.Error) {

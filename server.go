@@ -1,127 +1,50 @@
 package main
 
 import (
-	//"github.com/hoisie/web.go";
-  "web";
-  "fmt"
-  "strconv";
   "json";
-  "bytes";
-  "os";
-  //"io/ioutil";
   "github.com/madari/go-socket.io";
+  "github.com/hoisie/redis.go";
   "http";
   "log";
 )
 
-func allowCrossOriginResourceSharing(ctx *web.Context) {
-  ctx.SetHeader("Access-Control-Allow-Origin", "*", true);
-}
-
-func list(ctx *web.Context, val string) { 
-  allowCrossOriginResourceSharing(ctx);
-  ctx.ContentType("json") 
-
-  var url string;
-  var start int;
-  var count int;
-  var err os.Error;
-
-  url = string(ctx.Params["url"]);
-
-  if start, err = strconv.Atoi(ctx.Params["start"]); err != nil {
-    start = 0; // start defaults to 0
-  }
-
-  if count, err = strconv.Atoi(ctx.Params["count"]); err != nil {
-    count = 10; // Count defaults to 10
-   }
-
-  comments := PaginateFor(url, start, count);
-  j, _ := json.Marshal(comments);
-  ctx.WriteString(string(j));
-}
-
-func create(ctx *web.Context, val string) { 
-  allowCrossOriginResourceSharing(ctx);
-  ctx.ContentType("json") 
-
-  var comment Comment;
-  var err os.Error;
-
-  if err = ctx.UnmarshalParams(&comment); err != nil {
-    ctx.Abort(400, fmt.Sprintf("Error Parsing Comment: %", err));
-    return;
-  }
-
-  if err = comment.Save(); err != nil {
-    ctx.Abort(500, fmt.Sprintf("Error Saving Comment: %", err));
-    return;
-  }
-
-  j, _ := json.Marshal(comment);
-  ctx.WriteString(string(j));
-}
+var client redis.Client;
 
 var sio socketio.SocketIO;
+
 func socketIOConnectHandler(c *socketio.Conn) {
-  //sio.Broadcast(struct{ announcement string }{"connected: " + c.String()});
+  j, _ := json.Marshal(PaginateFor("", 0, 10));
+  c.Send("{\"event\":\"initial\", \"data\":" + string(j) + "}");
 }
 
 func socketIODisconnectHandler(c *socketio.Conn) {
-  //sio.BroadcastExcept(c, struct{ announcement string }{"disconnected: " + c.String()});
 }
 
 func socketIOMessageHandler(c *socketio.Conn, msg socketio.Message) {
-  var comment Comment;
-  var j []uint8;
-  var err os.Error;
-
-  if comment, err = New(bytes.NewBufferString(msg.Data()).Bytes()); err != nil {
-    log.Println(fmt.Sprintf("Error Parsing Comment %s", err));
-    c.Send(fmt.Sprintf("Error Parsing Comment %s", err));
-    return;
+  log.Println("RECEIVED: " + msg.Data());
+  if comment, err := Create([]uint8(msg.Data())); err == nil {
+    j, _ := json.Marshal(comment);
+    sio.Broadcast(struct{ announcement string }{ "{\"event\":\"comment\", \"data\":" + string(j) + "}" });
+  } else {
+    log.Println("Error Storing Comment: %s", err);
   }
-
-  if err = comment.Save(); err != nil {
-    log.Println(fmt.Sprintf("Error Saving Comment %s", err));
-    c.Send(fmt.Sprintf("Error Saving Comment %s", err));
-    return;
-  }
-
-  if j, err = json.Marshal(comment); err != nil {
-    log.Println(fmt.Sprintf("Error Saving Comment %s", err));
-    c.Send(fmt.Sprintf("Error Saving Comment %s", err));
-    return;
-  }
-
-  sio.Broadcast(struct{ announcement string }{string(j)});
 }
 
 func main() {
-  client.Addr = "127.0.0.1:6379";
-  web.Get("/comments(.*)", list);
-  web.Post("/comments(.*)", create);
-	web.Run("0.0.0.0:3000");
+  client.Addr = "localhost:6379";
 
   // create the socket.io server and mux it to /socket.io/
   config := socketio.DefaultConfig
-  config.Origins = []string{"localhost:8080"}
+  config.Origins = []string{"appdev.loc:3000"}
   sio := socketio.NewSocketIO(&config)
   
-  go func() {
-    if err := sio.ListenAndServeFlashPolicy(":843"); err != nil {
-      log.Println(err)
-    }
-  }()
-
   sio.OnConnect(socketIOConnectHandler);
   sio.OnDisconnect(socketIODisconnectHandler);
   sio.OnMessage(socketIOMessageHandler);
 
   mux := sio.ServeMux();
-  mux.Handle("/", http.FileServer("www/", "/"))
-  if err := http.ListenAndServe(":8080", mux); err != nil {
+  mux.Handle("/", http.FileServer("static/", "/"))
+  if err := http.ListenAndServe(":3000", mux); err != nil {
     log.Fatal("ListenAndServe: ", err);
   }
 }
