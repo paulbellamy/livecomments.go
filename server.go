@@ -13,7 +13,7 @@ var client redis.Client;
 var sio *socketio.SocketIO;
 
 func socketIOConnectHandler(c *socketio.Conn) {
-  j, _ := json.Marshal(PaginateFor("", 0, 10));
+  j, _ := json.Marshal(PaginateFor("/", 0, 10));
   c.Send("{\"event\":\"initial\", \"data\":" + string(j) + "}");
 }
 
@@ -21,7 +21,6 @@ func socketIODisconnectHandler(c *socketio.Conn) {
 }
 
 func socketIOMessageHandler(c *socketio.Conn, msg socketio.Message) {
-  log.Println("RECEIVED: ", msg.Data());
   if comment, err := Create([]uint8(msg.Data())); err == nil {
     log.Println("Stored Comment: ", comment.ToJson());
     sio.Broadcast("{\"event\":\"comment\", \"data\":" + comment.ToJson() + "}");
