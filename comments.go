@@ -57,6 +57,15 @@ func PaginateFor(url string, start int, count int) (c []Comment) {
   return c;
 }
 
+func (c *Comment) ToJson() (j string) {
+  if j, err := json.Marshal(c); err != nil {
+    log.Println("Error Encoding Comment to Json: ", err);
+  } else {
+    return string(j);
+  }
+  return "";
+}
+
 func (c *Comment) Save() (err os.Error) {
 
   newRecord := false;
@@ -72,8 +81,7 @@ func (c *Comment) Save() (err os.Error) {
   }
 
   // Store it by the primary key
-  j, err := json.Marshal(c);
-  client.Set(fmt.Sprintf("comment:id:%i", c.Id), j);
+  client.Set(fmt.Sprintf("comment:id:%i", c.Id), []uint8(c.ToJson()));
   if (err != nil) { return err; }
 
   if (newRecord) {

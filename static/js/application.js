@@ -26,7 +26,7 @@ var models = this.models = {};
 
 models.Comment = Backbone.Model.extend({});
 
-models.CommentCollection = Backbone.Model.extend({
+models.CommentCollection = Backbone.Collection.extend({
   model: models.Comment
 });
 
@@ -34,20 +34,23 @@ models.LiveCommentsModel = Backbone.Collection.extend({
   initialize: function() {
     this.comments = new models.CommentCollection(); 
   }
+
+  // Import a bunch of comments (initial setup)
+  , mport: function(data) {
+    this.comments.add(data.reverse());
+  }
 });
 
 var commentTemplate = '<div class="comment" id="{{id}}"><div class="commentAuthor">{{author}}:</div><div class="commentTimestamp">{{timestamp}}</div><div class="commentBody">{{body}}</div></div>';
 
 var CommentView = Backbone.View.extend({
-  tagName: 'li',
-
   initialize: function(options) {
     _.bindAll(this, 'render');
     this.model.bind('all', this.render);
-  },
+  }
 
-  render: function() {
-    var data = { id: this.model.get('Id')
+  , render: function() {
+    var commentData = { id: this.model.get('Id')
                , author: this.model.get('Author')
                , body: this.model.get('Body')
                , timestamp: humanizeTimestamp(this.model.get('CreatedAt')*1000)
@@ -69,20 +72,22 @@ var LiveCommentsView = Backbone.View.extend({
     var view = new CommentView({model: comment});
     var el = view.render().el;
     $('#commentHistory').prepend(el);
-    // Animate the new comment
-    $(el).slideUp(0);
-    $(el).slideDown();
   }
 
   , msgReceived: function(message){
-    console.log("RECEIVED: " + JSON.stringify(message));
+    console.log("RECEIVED: " + message);
+    message = $.parseJSON(message);
     switch(message.event) {
       case 'initial':
+        $('#commentHistory').html('');
         this.model.mport(message.data);
         break;
       case 'comment':
-        var newComment = new models.Comment($.parseJSON(message.data));
+        var newComment = new models.Comment(message.data);
         this.model.comments.add(newComment);
+        // Animate the new comment
+        $('.comment#' + newComment.get('Id')).slideUp(0);
+        $('.comment#' + newComment.get('Id')).slideDown();
         break;
     }
   }
@@ -95,6 +100,17 @@ var LiveCommentsView = Backbone.View.extend({
     this.socket.send(newComment.toJSON());
     body.val('');
   }
+
+  /*
+  , render: function() {
+    $('commentHistory').html('');
+    var view = this;
+    _.each(this.model.models, function(comment) {
+      view.addComment(new models.Comment(comment), true);
+    });
+    return this;
+  }
+  */
 });
 
 var LiveCommentsController = {
@@ -109,7 +125,6 @@ var LiveCommentsController = {
     this.socket.on('message', function(msg) {view.msgReceived(msg)});
     this.socket.connect();
 
-    this.view.render();
 
     return this;
   }

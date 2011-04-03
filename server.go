@@ -23,9 +23,9 @@ func socketIODisconnectHandler(c *socketio.Conn) {
 func socketIOMessageHandler(c *socketio.Conn, msg socketio.Message) {
   log.Println("RECEIVED: ", msg.Data());
   if comment, err := Create([]uint8(msg.Data())); err == nil {
-    j, _ := json.Marshal(comment);
-    log.Println("Stored Comment: ", string(j));
-    sio.Broadcast(struct{ announcement string }{ "{\"event\":\"comment\", \"data\":" + string(j) + "}" });
+    log.Println("Stored Comment: ", comment.ToJson());
+    log.Println("{\"event\":\"comment\", \"data\":" + comment.ToJson() + "}");
+    c.Send("{\"event\":\"comment\", \"data\":" + comment.ToJson() + "}");
   } else {
     log.Println("Error Storing Comment: ", err);
   }
