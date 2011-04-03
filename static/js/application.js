@@ -75,7 +75,6 @@ var LiveCommentsView = Backbone.View.extend({
   }
 
   , msgReceived: function(message){
-    console.log("RECEIVED: " + message);
     message = $.parseJSON(message);
     switch(message.event) {
       case 'initial':
@@ -96,7 +95,7 @@ var LiveCommentsView = Backbone.View.extend({
 
   , postComment: function(){
     var author = $('input[name=newCommentAuthor]');
-    var body = $('textarea[name=newCommentBody]');
+    var body = $('input[name=newCommentBody]');
     var newComment= new models.Comment({ Author: author.val()
                                        , Body: body.val()});
     this.socket.send(newComment.toJSON());

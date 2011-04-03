@@ -10,7 +10,7 @@ import (
 
 var client redis.Client;
 
-var sio socketio.SocketIO;
+var sio *socketio.SocketIO;
 
 func socketIOConnectHandler(c *socketio.Conn) {
   j, _ := json.Marshal(PaginateFor("", 0, 10));
@@ -24,8 +24,7 @@ func socketIOMessageHandler(c *socketio.Conn, msg socketio.Message) {
   log.Println("RECEIVED: ", msg.Data());
   if comment, err := Create([]uint8(msg.Data())); err == nil {
     log.Println("Stored Comment: ", comment.ToJson());
-    log.Println("{\"event\":\"comment\", \"data\":" + comment.ToJson() + "}");
-    c.Send("{\"event\":\"comment\", \"data\":" + comment.ToJson() + "}");
+    sio.Broadcast("{\"event\":\"comment\", \"data\":" + comment.ToJson() + "}");
   } else {
     log.Println("Error Storing Comment: ", err);
   }
@@ -36,8 +35,8 @@ func main() {
 
   // create the socket.io server and mux it to /socket.io/
   config := socketio.DefaultConfig
-  config.Origins = []string{"appdev.loc:3000"}
-  sio := socketio.NewSocketIO(&config)
+  config.Origins = []string{"*"}
+  sio = socketio.NewSocketIO(&config)
   
   sio.OnConnect(socketIOConnectHandler);
   sio.OnDisconnect(socketIODisconnectHandler);
