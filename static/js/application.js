@@ -98,7 +98,7 @@ var LiveCommentsView = Backbone.View.extend({
     var body = $('input[name=newCommentBody]');
     var newComment= new models.Comment({ Author: author.val()
                                        , Body: body.val()
-                                       , PageUrl: window.location.href});
+                                       , PageUrl: '/'});
     this.socket.send(newComment.toJSON());
     body.val('');
   }
