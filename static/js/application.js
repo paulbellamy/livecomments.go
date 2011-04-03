@@ -86,8 +86,10 @@ var LiveCommentsView = Backbone.View.extend({
         var newComment = new models.Comment(message.data);
         this.model.comments.add(newComment);
         // Animate the new comment
-        $('.comment#' + newComment.get('Id')).slideUp(0);
-        $('.comment#' + newComment.get('Id')).slideDown();
+        var elem = $('#commentHistory .comment#' + newComment.get('Id'));
+        elem.slideUp(0);
+        elem.slideDown();
+        $('#commentHistory .comment').slice(10).slideUp() // Hide any over 10
         break;
     }
   }
