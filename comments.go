@@ -40,7 +40,6 @@ func Create(j []byte) (c Comment, err os.Error) {
 }
 
 func Find(id int64) (c Comment, err os.Error) {
-  c.Id = id;
   js, _ := client.Get( fmt.Sprintf("comment:id:%i", id) );
   return New(js);
 }
