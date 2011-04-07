@@ -102,17 +102,6 @@ var LiveCommentsView = Backbone.View.extend({
     this.socket.send(newComment.toJSON());
     body.val('');
   }
-
-  /*
-  , render: function() {
-    $('commentHistory').html('');
-    var view = this;
-    _.each(this.model.models, function(comment) {
-      view.addComment(new models.Comment(comment), true);
-    });
-    return this;
-  }
-  */
 });
 
 var LiveCommentsController = {
