@@ -40,7 +40,7 @@ func Create(j []byte) (c Comment, err os.Error) {
 }
 
 func Find(id int64) (c Comment, err os.Error) {
-  js, _ := client.Get( fmt.Sprintf("comment:id:%i", id) );
+  js, _ := client.Get( fmt.Sprintf("comment:id:%d", id) );
   return New(js);
 }
 
@@ -80,7 +80,7 @@ func (c *Comment) Save() (err os.Error) {
   }
 
   // Store it by the primary key
-  client.Set(fmt.Sprintf("comment:id:%i", c.Id), []uint8(c.ToJson()));
+  client.Set(fmt.Sprintf("comment:id:%d", c.Id), []uint8(c.ToJson()));
   if (err != nil) { return err; }
 
   if (newRecord) {
