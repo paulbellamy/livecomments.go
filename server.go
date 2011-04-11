@@ -43,7 +43,7 @@ func main() {
 
   mux := sio.ServeMux();
   mux.Handle("/", http.FileServer("static/", "/"))
-  if err := http.ListenAndServe(":3000", mux); err != nil {
+  if err := http.ListenAndServe(":80", mux); err != nil {
     log.Fatal("ListenAndServe: ", err);
   }
 }
