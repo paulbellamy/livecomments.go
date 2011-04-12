@@ -13,33 +13,19 @@ var client redis.Client
 var sio *socketio.SocketIO
 
 func socketIOConnectHandler(c *socketio.Conn) {
+	j, _ := json.Marshal(PaginateFor("/", 0, 10))
+	c.Send("{\"event\":\"initial\", \"data\":" + string(j) + "}")
 }
 
 func socketIODisconnectHandler(c *socketio.Conn) {
 }
 
 func socketIOMessageHandler(c *socketio.Conn, msg socketio.Message) {
-	var j map[string]string
-	err := json.Unmarshal([]uint8(msg.Data()), &j)
-
-	if err != nil {
-		log.Println("Error Parsing Message: ", err)
-		return
-	}
-
-	switch j["event"] {
-	case "initial":
-		log.Println("got initial: ", j["data"])
-		r, _ := json.Marshal(PaginateFor(j["data"], 0, 10))
-		c.Send("{\"event\":\"initial\", \"data\":" + string(r) + "}")
-	case "comment":
-		log.Println("got comment: ", j["data"])
-		if comment, err := Create([]uint8(j["data"])); err == nil {
-			log.Println("Stored Comment: ", comment.ToJson())
-			sio.Broadcast("{\"event\":\"comment\", \"data\":" + comment.ToJson() + "}")
-		} else {
-			log.Println("Error Storing Comment: ", err)
-		}
+	if comment, err := Create([]uint8(msg.Data())); err == nil {
+		log.Println("Stored Comment: ", comment.ToJson())
+		sio.Broadcast("{\"event\":\"comment\", \"data\":" + comment.ToJson() + "}")
+	} else {
+		log.Println("Error Storing Comment: ", err)
 	}
 }
 
