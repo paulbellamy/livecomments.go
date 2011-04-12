@@ -99,8 +99,8 @@ var LiveCommentsView = Backbone.View.extend({
     if (body.val() != '') {
       var newComment= new models.Comment({ Author: author.val()
                                          , Body: body.val()
-                                         , PageUrl: '/'});
-      this.socket.send(newComment.toJSON());
+                                         , PageUrl: window.location.origin + window.location.pathname});
+      this.socket.send(JSON.stringify({event: "comment", data: JSON.stringify(newComment.toJSON())}));
       body.val('');
     }
   }
@@ -117,6 +117,9 @@ var LiveCommentsController = {
 
     this.socket.on('message', function(msg) {view.msgReceived(msg)});
     this.socket.connect();
+    this.socket.send(JSON.stringify({ event: "initial"
+                     , data: window.location.origin + window.location.pathname
+                     }));
 
 
     return this;
